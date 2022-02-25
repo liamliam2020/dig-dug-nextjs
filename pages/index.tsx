@@ -4,14 +4,26 @@ import { canvasHeight, canvasWidth, drawSprit, initializeBoard } from '../script
 
 //TODO interfaces for ts will be cleaner
 
+interface Location {
+  location: {
+    x: number,
+    y: number
+  }
+}
+
 const Home: NextPage = () => {
+  // TODO is this the best way to use lodash????
+  var _ = require('lodash')
 
   // Canvas
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
   // Game States
-  const [taizoHori, setTaizoHori] = useState<{location: { x: number; y: number }}>({
-    location: { x: 10, y: 3 }
+  const [taizoHori, setTaizoHori] = useState<Location>({
+    location: {
+      x: 10, 
+      y: 3
+    }
   })
 
   // Game Hook
@@ -22,7 +34,47 @@ const Home: NextPage = () => {
     initializeBoard(ctx)
     drawSprit(ctx, taizoHori.location.x, taizoHori.location.y)
 
-  }, [])
+  }, [taizoHori])
+
+  // Event Listener: Key Presses
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        [
+          'ArrowUp',
+          'ArrowDown',
+          'ArrowLeft',
+          'ArrowRight'
+        ].includes(e.key)
+      ) {
+        let currentLocation = _.cloneDeep(taizoHori)
+
+        switch (e.key) {
+          case 'ArrowRight':
+            currentLocation.location.x = currentLocation.location.x + 1
+            break
+          case 'ArrowLeft':
+            currentLocation.location.x = currentLocation.location.x - 1
+            break
+          case 'ArrowDown':
+            currentLocation.location.y = currentLocation.location.y + 1
+            break
+          case 'ArrowUp':
+            currentLocation.location.y = currentLocation.location.y - 1
+            break
+          default:
+            console.error('Error with handleKeyDown')
+        }
+
+        setTaizoHori(currentLocation)
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [taizoHori])
 
   return (
     <div>
